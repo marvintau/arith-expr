@@ -20,5 +20,13 @@
     "test": "tests"
   },
   "dependencies": {},
-  "description": ""
+  "description": "Simple Arithmetic Expression Evaluator ================",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marvintau/arith-expr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marvintau/arith-expr/issues"
+  },
+  "homepage": "https://github.com/marvintau/arith-expr#readme"
 }
