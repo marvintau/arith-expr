@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "dist/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --watchAll"
   },
   "jest": {
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.jsx?$"
