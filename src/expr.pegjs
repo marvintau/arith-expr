@@ -43,10 +43,10 @@ Variable 'variable'
   }
 
 Real 'real'
-  = _ Integer ('.' Integer ([eE] [+-] Integer)?)? { return parseFloat(text());}
+  = _ [+-]? Integer ('.' Integer ([eE] [+-] Integer)?)? { return parseFloat(text());}
 
 Integer "integer"
-  = _ [0-9]+ { return parseInt(text(), 10); }
+  = _ [+-]? [0-9]+ { return parseInt(text(), 10); }
 
 _ "whitespace"
   = [ \t\n\r]*
