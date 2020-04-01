@@ -1,12 +1,23 @@
 {
 	var thisParser = this;
     
-  	function getVarTable(parser){
-     	return parser.varTable || {};
-  	}
+  function getVarTable(parser){
+    return parser.varTable || {};
+  }
 }
 
-Expression
+Expr
+  = Comp
+  / ExprAlt
+
+Comp
+  = first:Factor _ "===" _ last:Factor {
+    return (first === last)
+    ? 'EQUAL'
+    : Math.abs(first - last);
+  }
+
+ExprAlt
   = head:(Term)? tail:(_ ("+" / "-") _ Term)* {
       return tail.reduce(function(result, element) {
       	switch(element[1]){
@@ -27,7 +38,7 @@ Term
     }
 
 Factor
-  = "(" _ expr:Expression _ ")" { return expr; }
+  = "(" _ expr:ExprAlt _ ")" { return expr; }
   / Variable
   / Real
   / Integer

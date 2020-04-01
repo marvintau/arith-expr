@@ -25,3 +25,8 @@ test('throwing error', () => {
   expect(() => parse('<')).toThrowError('Expected');
   expect(() => parse('asdbsd')).toThrowError('identifier');
 })
+
+test('comparison', () => {
+  expect(parse('a === b', {a:1, b:2})).toBe(1);
+  expect(parse('a === b', {a:1, b:1})).toBe('EQUAL');
+})
