@@ -1,10 +1,51 @@
 {
-	var thisParser = this;
+	var parserInstance = this;
     
-  function getVarTable(parser){
-    return parser.varTable || {};
-  }
+  var {varTable={}, data={}, get, column} = parserInstance;
+
+  var vars = {...varTable};
+
+  var currArray;
+
 }
+
+PathExpr
+  = SheetName ":" siblings:Path expr:(":" Expr)* {
+    return {
+      siblings,
+      result: expr.length > 0 ? expr[0][1] : undefined
+    }
+  }
+  / Expr
+
+SheetName
+  = Literal {
+    const sheetName = text();
+
+    if(data[sheetName] === undefined){
+      error(`Sheet name does not exist in given dataset.`);
+    } else {
+      currArray = data[sheetName];
+    }
+  }
+
+Path
+  = head:Literal tail:("/" Literal)* {
+    if (currArray === undefined){
+      error(`Encountered path before sheet initialized`);
+    }
+    const path = tail.reduce((result, elem) => {
+      return result.concat(elem[1]);
+    }, [head]);
+
+    const {record, siblings} = get(currArray, {path, column})
+
+    if (record !== undefined){
+      Object.assign(vars, varTable, record);
+    }
+
+    return siblings;
+  }
 
 Expr
   = Comp
@@ -44,14 +85,16 @@ Factor
   / Integer
 
 Variable 'variable'
-  = _ [A-Za-z\u4E00-\u9FA5][A-Za-z0-9\u4E00-\u9FA5_]* {
+  = _ '$' lit:Literal* {
 
-    let varTable = getVarTable(thisParser);
+    return !(lit in vars)
+    ? error(`Identifier [${lit}] not found in variable table`)
+    : vars[lit]
+  }
 
-    let variable = text();
-    return !(variable in varTable)
-    ? error(`identifier [${variable}] not found in variable table`)
-    : varTable[variable]
+Literal 'literal'
+  = [A-Za-z\u4E00-\u9FA5][A-Za-z0-9\u4E00-\u9FA5_]* {
+    return text();
   }
 
 Real 'real'

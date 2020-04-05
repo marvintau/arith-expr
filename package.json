@@ -3,14 +3,20 @@
   "version": "0.0.5",
   "main": "dist/index.js",
   "scripts": {
-    "test": "jest --watchAll"
+    "test": "jest --watchAll --coverage"
   },
   "jest": {
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.jsx?$"
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.jsx?$",
+    "coverageReporters": [
+      "json-summary",
+      "text",
+      "lcov"
+    ]
   },
   "author": "Yue Marvin Tao",
   "license": "ISC",
   "devDependencies": {
+    "@marvintau/chua": "^1.0.3",
     "jest": "^25.1.0",
     "pegjs": "^0.10.0",
     "pegjs-loader": "^0.5.6",

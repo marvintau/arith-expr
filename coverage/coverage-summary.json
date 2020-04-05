@@ -1,0 +1,3 @@
+{"total": {"lines":{"total":3,"covered":2,"skipped":0,"pct":66.67},"statements":{"total":359,"covered":236,"skipped":0,"pct":65.74},"functions":{"total":114,"covered":71,"skipped":0,"pct":62.28},"branches":{"total":487,"covered":270,"skipped":0,"pct":55.44}}
+,"/Users/yuetao/Projects/arith-expr/dist/index.js": {"lines":{"total":3,"covered":2,"skipped":0,"pct":66.67},"functions":{"total":114,"covered":71,"skipped":0,"pct":62.28},"statements":{"total":359,"covered":236,"skipped":0,"pct":65.74},"branches":{"total":487,"covered":270,"skipped":0,"pct":55.44}}
+}
