@@ -6,15 +6,38 @@
   var vars = {...varTable};
 
   var currArray;
-
+  var error = {};
 }
 
 PathExpr
   = SheetName ":" siblings:Path expr:(":" Expr)* {
-    return {
-      siblings,
-      result: expr.length > 0 ? expr[0][1] : undefined
+
+    let {Sheet, Path, Var} = error;
+
+    let code, result;
+    if (Sheet) {
+      code = Sheet;
+      result = 0;
+    } else if (Path){
+      code = Path;
+      result = 0;
+    } else {
+      if (Path){
+        code = Path;
+        result = 0;
+      } else if (expr.length === 0){
+        code = 'INCOMPLETE_REFERENCE_FORMAT'
+        result = 0;
+      } else if (Var) {
+        code = error.Var.code;
+        result = 0;
+      } else {
+        const {result:exprRes, code:exprCode} = expr[0][1];
+        result = exprRes;
+        code   = exprCode;
+      }
     }
+    return { siblings, result, code}
   }
   / Expr
 
@@ -23,7 +46,7 @@ SheetName
     const sheetName = text();
 
     if(data[sheetName] === undefined){
-      error(`Sheet name does not exist in given dataset.`);
+      error.Sheet = 'SHEET_NOT_EXISTS';
     } else {
       currArray = data[sheetName];
     }
@@ -31,17 +54,24 @@ SheetName
 
 Path
   = head:Literal tail:("/" Literal)* {
-    if (currArray === undefined){
-      error(`Encountered path before sheet initialized`);
+
+    // By here we did the parsing
+    if (error.Sheet) {
+      error.Path = error.Sheet;
+      return;
     }
+
     const path = tail.reduce((result, elem) => {
       return result.concat(elem[1]);
     }, [head]);
 
     const {record, siblings} = get(currArray, {path, column})
 
+    let code;
     if (record !== undefined){
       Object.assign(vars, varTable, record);
+    } else {
+      error.Path = 'RECORD_NOT_FOUND';
     }
 
     return siblings;
@@ -53,20 +83,37 @@ Expr
 
 Comp
   = first:Factor _ "===" _ last:Factor {
-    return (first === last)
-    ? 'EQUAL'
-    : Math.abs(first - last);
+    
+    if (error.Var){
+      return {
+        result: 0,
+        code: error.Var
+      }
+    } else {
+      return { result: (first === last) ? 'EQUAL' : Math.abs(first - last) }
+    }
+
   }
 
 ExprAlt
   = head:(Term)? tail:(_ ("+" / "-") _ Term)* {
-      return tail.reduce(function(result, element) {
+
+    if (error.Var) {
+      return {
+        result: 0,
+        code: error.Var
+      }
+    } else {
+      const result = tail.reduce(function(result, element) {
       	switch(element[1]){
         	case '+': return result + element[3];
           case '-': return result - element[3];
         }
       }, head ? head : 0);
+      return {result};
     }
+
+  }
 
 Term
   = head:Factor tail:(_ ("*" / "/") _ Factor)* {
@@ -79,7 +126,7 @@ Term
     }
 
 Factor
-  = "(" _ expr:ExprAlt _ ")" { return expr; }
+  = "(" _ expr:ExprAlt _ ")" { return expr.result; }
   / Variable
   / Real
   / Integer
@@ -87,9 +134,12 @@ Factor
 Variable 'variable'
   = _ '$' lit:Literal* {
 
-    return !(lit in vars)
-    ? error(`Identifier [${lit}] not found in variable table`)
-    : vars[lit]
+    if (!(lit in vars)){
+      error.Var = {code: 'VAR_NOT_FOUND', varNme:lit};
+      return 0;
+    } else {
+      return vars[lit];
+    }
   }
 
 Literal 'literal'

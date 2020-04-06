@@ -37,52 +37,73 @@ pathify(bigArray);
 const flattened = flat(bigArray);
 const paths = flattened.map(({__path}) => __path);
 
-
-test('parsing simple arithmetic', () => {
-  expect(parse('-5')).toBe(-5);
-  expect(parse('-5.123')).toBe(-5.123);
-  expect(parse('1+1')).toBe(2);
-  expect(parse('3*(5+2)')).toBe(21);
-  expect(parse('3*(5+2.5)')).toBe(22.5);
-  expect(parse('(-3)*(5-2.5)')).toBe(-7.5);
-});
-
-test('parsing expression with variable table', () => {
-  expect(parse('1 + $a', {a: 1})).toBe(2);
-  expect(parse('-$a', {a: 1})).toBe(-1);
-  expect(parse('3+ $b / $c', {b:4, c:2})).toBe(5);
+describe('evaluating expr', () => {
+  test('parsing simple arithmetic', () => {
+    expect(parse('-5').result).toBe(-5);
+    expect(parse('-5.123').result).toBe(-5.123);
+    expect(parse('1+1').result).toBe(2);
+    expect(parse('3*(5+2)').result).toBe(21);
+    expect(parse('3*(5+2.5)').result).toBe(22.5);
+    expect(parse('(-3)*(5-2.5)').result).toBe(-7.5);
+  });
+  
+  test('parsing expression with variable table', () => {
+    expect(parse('1 + $a', {a: 1}).result).toBe(2);
+    expect(parse('-$a', {a: 1}).result).toBe(-1);
+    expect(parse('3+ $b / $c', {b:4, c:2}).result).toBe(5);
+  })
+  
+  test('中文支持', () => {
+    expect(parse('1+$借方-$贷方', {借方: 20, 贷方:10}).result).toBe(11);
+  })
+  
+  test('throwing error', () => {
+    // const {result}
+    expect(parse('$asdbsd').result).toBe(0);
+  })
+  
+  test('comparison', () => {
+    expect(parse('$a === $b', {a:1, b:2}).result).toBe(1);
+    expect(parse('$a === $b', {a:1, b:1}).result).toBe('EQUAL');
+  })
 })
 
-test('中文支持', () => {
-  expect(parse('1+$借方-$贷方', {借方: 20, 贷方:10})).toBe(11);
-})
-
-test('throwing error', () => {
-  // expect(() => parse('-5')).toThrow();
-  // expect(() => parse('')).toThrow();
-  expect(() => parse('<')).toThrowError('Expected');
-  expect(() => parse('$asdbsd')).toThrowError('Identifier');
-})
-
-test('comparison', () => {
-  expect(parse('$a === $b', {a:1, b:2})).toBe(1);
-  expect(parse('$a === $b', {a:1, b:1})).toBe('EQUAL');
-})
-
-test('path', () => {
+describe('path', () => {
   const path = paths.randomChoice();
   const {list} = get(bigArray, {path, withList:true});
   const pathName = list.map(({name}) => name);
   const {record, siblings} = get(bigArray, {path: pathName, column:'name'});
+  const pathString = pathName.join('/');  
 
-  const pathString = pathName.join('/');
-  const nonExistPathString = pathString.slice(0, -3);
+  test('name', () => {
+    const {result, code} = parse(`YO:${pathName.join('/')}:1`, {}, {ARRAY:bigArray});
+    expect(result).toBe(0);
+    expect(code).toBe('SHEET_NOT_EXISTS');
+  })
 
-  const foundPathResult = parse(`ARRAY:${pathString}:$num`, {}, {ARRAY:bigArray}, 'name');
-  const notFoundPathResult = parse(`ARRAY:${nonExistPathString}`, {}, {ARRAY:bigArray}, 'name');
-  expect(foundPathResult.result).toBe(record.num);
-  expect(foundPathResult.siblings.length).toBe(siblings.length);
-  expect(notFoundPathResult.result).toBe(undefined);
-  expect(notFoundPathResult.siblings).toEqual(siblings);
-  expect(() => parse(`YO:${pathName.join('/')}:1`, {__column:'name'}, {ARRAY:bigArray})).toThrowError('Sheet name');
+  test('incomplete path', () => {
+    const nonExistPathString = pathString.slice(0, -3);
+    const {result, code, siblings:sibs} = parse(`ARRAY:${nonExistPathString}`, {}, {ARRAY:bigArray}, 'name');
+    expect(result).toBe(0);
+    expect(code).toBe('RECORD_NOT_FOUND');
+    expect(sibs).toBe(siblings);
+  })
+
+  test('complete path but no expr', () => {
+    const {result, code} = parse(`ARRAY:${pathString}`, {}, {ARRAY:bigArray}, 'name');
+    expect(result).toBe(0);
+    expect(code).toBe("INCOMPLETE_REFERENCE_FORMAT");
+  })
+
+  test('not found var', () => {
+    const {result, code} = parse(`ARRAY:${pathString}:$askd1`, {}, {ARRAY:bigArray}, 'name');
+    expect(result).toBe(0);
+    expect(code).toBe("VAR_NOT_FOUND");
+  })
+
+  test ('normal', () => {
+    const {result, code} = parse(`ARRAY:${pathString}:($num * 2)+1`, {}, {ARRAY:bigArray}, 'name');
+    expect(result).toBe(record.num * 2 + 1);
+    expect(code).toBe(undefined);
+  })
 })

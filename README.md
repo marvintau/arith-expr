@@ -1,6 +1,6 @@
 | Statements | Branches | Functions | Lines |
 | -----------|----------|-----------|-------|
-| ![Statements](https://img.shields.io/badge/Coverage-65.18%25-red.svg "Make me better!") | ![Branches](https://img.shields.io/badge/Coverage-53.59%25-red.svg "Make me better!") | ![Functions](https://img.shields.io/badge/Coverage-61.4%25-red.svg "Make me better!") | ![Lines](https://img.shields.io/badge/Coverage-66.67%25-red.svg "Make me better!") |
+| ![Statements](https://img.shields.io/badge/Coverage-57.75%25-red.svg "Make me better!") | ![Branches](https://img.shields.io/badge/Coverage-51.1%25-red.svg "Make me better!") | ![Functions](https://img.shields.io/badge/Coverage-50%25-red.svg "Make me better!") | ![Lines](https://img.shields.io/badge/Coverage-66.67%25-red.svg "Make me better!") |
 
 Simple Arithmetic Expression Evaluator
 ================
