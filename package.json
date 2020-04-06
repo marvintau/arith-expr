@@ -3,7 +3,8 @@
   "version": "0.0.6",
   "main": "dist/index.js",
   "scripts": {
-    "test": "jest --watchAll --coverage"
+    "test": "jest --watchAll --coverage",
+    "make-badges": "jest-badges-readme"
   },
   "jest": {
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.jsx?$",
@@ -13,10 +14,16 @@
       "lcov"
     ]
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "jest && node_modules/.bin/jest-badges-readme && git add 'README.md'"
+    }
+  },
   "author": "Yue Marvin Tao",
   "license": "ISC",
   "devDependencies": {
     "@marvintau/chua": "^1.0.3",
+    "husky": "^4.2.3",
     "jest": "^25.1.0",
     "pegjs": "^0.10.0",
     "pegjs-loader": "^0.5.6",
