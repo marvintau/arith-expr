@@ -23,6 +23,7 @@
   "license": "ISC",
   "devDependencies": {
     "@marvintau/chua": "^1.0.3",
+    "@olavoparno/jest-badges-readme": "^1.4.1",
     "husky": "^4.2.3",
     "jest": "^25.1.0",
     "pegjs": "^0.10.0",
